@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BT_transmission</string>
+    <string name="connected">Connected!!</string>
 </resources>
