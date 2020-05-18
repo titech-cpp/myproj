@@ -1,0 +1,34 @@
+# VK_VERISON_1_1 check failed
+- vkBindImageMemory2
+- vkBindBufferMemory2
+- vkGetDeviceGroupPeerMemoryFeatures
+- vkCmdSetDeviceMask
+- vkCmdDispatchBase
+- vkGetImageMemoryRequirements2
+- vkGetBufferMemoryRequirements2
+- vkGetImageSparseMemoryRequirements2
+- vkTrimCommandPool
+- vkCreateSamplerYcbcrConversion
+- vkDestroySamplerYcbcrConversion
+- vkCreateDescriptorUpdateTemplate
+- vkDestroyDescriptorUpdateTemplate
+- vkUpdateDescriptorSetWithTemplate
+- vkGetDescriptorSetLayoutSupport
+
+# Warning: Vulkan 1.1 APIs missing from device
+- createOrGetGlobalVkEmulation
+
+#soketTcpLoopBackClientFor
+- fd 44204 above FD_SETSIZE (32768) (for 4 times)
+- fd 42784 above FD_SETSIZE (32768) (for 2 times)
+- fd 43048 above FD_SETSIZE (32768) (for 2 times)
+- fd 43048 above FD_SETSIZE (32768) (for 2 times)
+- fd 57628 above FD_SETSIZE (32768) (for 2 times)
+- fd 34884 above FD_SETSIZE (32768) (for 2 times) 
+
+
+
+# AdbHostServer.cpp:102:
+- Unable to connect to adb daemon on port: 5037 (for 4 times)
+
+# INFO: QtLogger.cpp:68: Critical: Uncaught TypeError: Cannot read property 'update' of undefined (qrc:/html/js/location-mock-web-channel.js:130, (null))

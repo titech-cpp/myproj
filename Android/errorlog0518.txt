@@ -1,0 +1,204 @@
+2020/05/18
+11:39	* daemon not running; starting now at tcp:5037
+
+11:39	* daemon started successfully
+
+11:39	Gradle sync started
+
+11:39	Gradle sync finished in 3 s 469 ms (from cached state)
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkBindBufferMemory2 not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkBindImageMemory2 not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkGetDeviceGroupPeerMemoryFeatures not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkCmdSetDeviceMask not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkCmdDispatchBase not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkGetImageMemoryRequirements2 not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkGetBufferMemoryRequirements2 not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkGetImageSparseMemoryRequirements2 not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkTrimCommandPool not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkCreateSamplerYcbcrConversion not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkDestroySamplerYcbcrConversion not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkCreateDescriptorUpdateTemplate not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkDestroyDescriptorUpdateTemplate not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkUpdateDescriptorSetWithTemplate not found
+
+11:40	Emulator: VK_VERSION_1_1 check failed: vkGetDescriptorSetLayoutSupport not found
+
+11:40	Emulator: createOrGetGlobalVkEmulation: Warning: Vulkan 1.1 APIs missing from device
+
+11:40	Executing tasks: [:app:assembleDebug] in project S:\User\Documents\titech 2-1\Cpp\Android
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 44204 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 44204 above FD_SETSIZE (32768)
+
+11:41	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:41	Gradle build finished in 1 m 10 s 704 ms
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 44204 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 44204 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 42784 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 42784 above FD_SETSIZE (32768)
+
+11:41	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 43048 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 43048 above FD_SETSIZE (32768)
+
+11:41	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 57628 above FD_SETSIZE (32768)
+
+11:41	Emulator: socketTcpLoopbackClientFor: error: fd 57628 above FD_SETSIZE (32768)
+
+11:41	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 34884 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 34884 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Session 'app': Installation did not succeed.
+			The application could not be installed.
+			Retry
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 34872 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 34872 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 34872 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 43144 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 43144 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 58256 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 58256 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 58144 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 58144 above FD_SETSIZE (3276
+
+11:42	Emulator: 8)
+
+11:42	Emulator: emulator:
+
+11:42	Emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 61696 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 61696 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 36632 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 36632 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 39028 above FD_SETSIZE (32768)
+
+11:42	Emulator: socketTcpLoopbackClientFor: error: fd 39028 above FD_SETSIZE (32768)
+
+11:42	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:49	Emulator: emulator: INFO: QtLogger.cpp:68: Critical: Uncaught TypeError: Cannot read property 'update' of undefined (qrc:/html/js/location-mock-web-channel.js:130, (null))
+
+11:49	Emulator: socketTcpLoopbackClientFor: error: fd 65548 above FD_SETSIZE (32768)
+
+11:49	Emulator: socketTcpLoopbackClientFor: error: fd 65548 above FD_SETSIZE (32768)
+
+11:49	Emulator: emulator: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:49	Emulator: Process finished with exit code 0
+
+11:50	Executing tasks: [:app:assembleDebug] in project S:\User\Documents\titech 2-1\Cpp\Android
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkBindBufferMemory2 not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkBindImageMemory2 not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkGetDeviceGroupPeerMemoryFeatures not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkCmdSetDeviceMask not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkCmdDispatchBase not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkGetImageMemoryRequirements2 not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkGetBufferMemoryRequirements2 not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkGetImageSparseMemoryRequirements2 not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkTrimCommandPool not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkCreateSamplerYcbcrConversion not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkDestroySamplerYcbcrConversion not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkCreateDescriptorUpdateTemplate not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkDestroyDescriptorUpdateTemplate not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkUpdateDescriptorSetWithTemplate not found
+
+11:50	Emulator: VK_VERSION_1_1 check failed: vkGetDescriptorSetLayoutSupport not found
+
+11:50	Emulator: createOrGetGlobalVkEmulation: Warning: Vulkan 1.1 APIs missing from device
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60516 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60516 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60520 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60520 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60532 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 60532 above FD_SETSIZE (32768)
+
+11:50	Gradle build finished in 7 s 239 ms
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 69300 above FD_SETSIZE (32768)
+
+11:50	Emulator: socketTcpLoopbackClientFor: error: fd 69300 above FD_SETSIZE (32768)
+
+11:50	Emulator: emula
+
+11:50	Emulator: tor: ERROR: AdbHostServer.cpp:102: Unable to connect to adb daemon on port: 5037
+
+11:50	Install successfully finished in 1 s 195 ms.
+
+11:52	Executing tasks: [:app:assembleDebug] in project S:\User\Documents\titech 2-1\Cpp\Android
+
+11:52	Gradle build finished in 9 s 687 ms
+
+11:52	Install successfully finished in 540 ms.: App restart successful without requiring a re-install.

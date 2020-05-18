@@ -1,0 +1,2 @@
+# このDirectoryについて
+Hello,worldするためのAndroidStuido環境です．事あるごとにうまくいかないDebugが実機依存なのか開発側依存なのかを特定するために使われ，原則read_onlyです．
