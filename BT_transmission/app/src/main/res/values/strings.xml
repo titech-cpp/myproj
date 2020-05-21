@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">BT_transmission</string>
     <string name="connected">Connected!!</string>
+    <string name="support">Your Device supports Bluetooth!!</string>
+    <string name="unsupport">Your Device Doesn\'t support Bluetooth!</string>
+    <string name="enable">ENABLED!</string>
+    <string name="disable">DISABLED;ω;</string>
 </resources>
