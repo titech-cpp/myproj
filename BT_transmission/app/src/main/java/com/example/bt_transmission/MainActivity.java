@@ -23,7 +23,7 @@ import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Set;
 
-class BTindex{
+class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 }
 
@@ -39,44 +39,47 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        /*接続部門．動作チェック済み*/
+        {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            TextView textView = (TextView) findViewById(R.id.textView);
+            //if connected
+            textView.setText(R.string.connected);
+            if (BTindex.bluetoothAdapter == null) {
+                //Device doesn"t support Bluetooth
+                textView.setText(R.string.unsupport);
+                return;
+            } else {
+                //Device supports BT
+                textView.setText(R.string.support);
+            }
 
-        TextView textView = (TextView) findViewById(R.id.textView);
-        //if connected
-        textView.setText(R.string.connected);
-        if (BTindex.bluetoothAdapter == null) {
-            //Device doesn"t support Bluetooth
-            textView.setText(R.string.unsupport);
-            return;
-        } else {
-            textView.setText(R.string.support);
-        }
-        if (!BTindex.bluetoothAdapter.isEnabled()) {
-            /* if false */
-            int REQUEST_ENABLE_BT = 100;
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-        Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
-        int num = 0;
-        String[] deviceList;
-        deviceList = new String[]{"o", "o"};
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                deviceList[num] = deviceName +"\t"+ deviceHardwareAddress;
-                num++;
+            if (!BTindex.bluetoothAdapter.isEnabled()) {
+                /* if false */
+                int REQUEST_ENABLE_BT = 100;
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+            Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
+            TextView textView2 = (TextView) findViewById(R.id.statement);
+            StringBuffer viewText = new StringBuffer("These are paired Devices.\n");
+            if (pairedDevices.size() > 0) {
+                // There are paired devices. Get the name and address of each paired device.
+                for (BluetoothDevice device : pairedDevices) {
+                    String deviceName = device.getName();
+                    String deviceHardwareAddress = device.getAddress(); // MAC address
+                    viewText.append(deviceName);
+                    viewText.append("\t");
+                    viewText.append(deviceHardwareAddress);
+                    viewText.append("\n\t");
+                }
+                textView2.setText(viewText);
             }
         }
-        TextView textView2 = (TextView) findViewById(R.id.statement);
-        String viewText= "These are paired Devices.\n";
-        for (int i=0;i<=deviceList.length;i++){
-            viewText = viewText + '\n';
-        }
-        textView2.setText(viewText);
+
+        /*入力部門*/
+
     }
 }
 
