@@ -6,6 +6,23 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="333dp"
+        android:layout_height="140dp"
+        android:layout_marginTop="140dp"
+        android:isScrollContainer="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+        <TextView
+            android:id="@+id/statement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </ScrollView>
+
     <Button
         android:id="@+id/button_go_upward"
         android:layout_width="60dp"
@@ -38,7 +55,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
-        android:id="@+id/scrollView2"
+        android:id="@+id/scrollView3"
         android:layout_width="333dp"
         android:layout_height="140dp"
         android:layout_marginTop="1dp"
@@ -50,7 +67,7 @@
         app:layout_constraintVertical_bias="0.0">
 
         <TextView
-            android:id="@+id/statement"
+            android:id="@+id/statement3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" />
@@ -105,10 +122,10 @@
         android:text="↓"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/button_go_upward"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/button_go_upward"
         app:layout_constraintTop_toBottomOf="@+id/button_go_upward"
-        app:layout_constraintVertical_bias="0.168" />
+        app:layout_constraintVertical_bias="0.444" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
