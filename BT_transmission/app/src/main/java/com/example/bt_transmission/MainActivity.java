@@ -21,6 +21,8 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,16 +35,21 @@ import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.CheckedOutputStream;
 
 import static android.content.ContentValues.TAG;
 import static com.example.bt_transmission.BTindex.MY_UUID;
+import static com.example.bt_transmission.BTindex.bluetoothAdapter;
+import static com.example.bt_transmission.BTindex.bluetoothDevice;
+import static com.example.bt_transmission.BTindex.bluetoothSocket;
 import static com.example.bt_transmission.BTindex.strTmp;
 import static java.lang.Boolean.TRUE;
 
 class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    public static int bluetoothSocket = BluetoothSocket.TYPE_RFCOMM;
-    public static UUID MY_UUID = UUID.randomUUID();
+    public static BluetoothSocket bluetoothSocket;
+    public static BluetoothDevice bluetoothDevice;
+    public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public static StringBuffer strTmp = new StringBuffer();
 }
 //set Connection for Client
@@ -196,7 +203,7 @@ class MyBluetoothService {
     }
 }
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  {
 //Permission Check
 //    if (ContextCompat.checkSelfPermission(MainActivity, Manifest.permission.BLUETOOTH)
 //            != PackageManager.PERMISSION_GRANTED) {
@@ -211,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver,filter);
+        registerReceiver(receiver, filter);
         {
             TextView textView = findViewById(R.id.statement);
             if (BTindex.bluetoothAdapter == null) {
@@ -228,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 int REQUEST_ENABLE_BT = 100;
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }else {
+            } else {
                 Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
                 TextView textView2 = (TextView) findViewById(R.id.statement);
                 StringBuffer viewText = new StringBuffer("These are paired Devices.\n");
@@ -241,10 +248,8 @@ public class MainActivity extends AppCompatActivity {
                         viewText.append("\t");
                         viewText.append(deviceHardwareAddress);
                         viewText.append("\n\t");
-                        ConnectThread connection = new ConnectThread(device);
-                        connection.run();
-                        viewText.append(BTindex.strTmp);
-                        strTmp.delete(0,strTmp.length());
+                        viewText.append(strTmp);
+                        strTmp.delete(0, strTmp.length());
                     }
                     textView2.setText(viewText);
                 }
@@ -253,36 +258,72 @@ public class MainActivity extends AppCompatActivity {
         }
         // sample sending operator　なんもわからん
         {
+            String deviceHardwareAddress = "3C:91:80:5C:1B:7C";
+            bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
             final Button button_Click_L = findViewById(R.id.button_Click_L);
+            CompoundButton button_Switch = findViewById(R.id.connect_switch1);
+            try {
+                bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            button_Switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        try {
+                            bluetoothSocket.connect();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            bluetoothSocket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+
+
             button_Click_L.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                        BluetoothSocket socket = BluetoothSocket.createInsecureRfcommSocketToServiceRecord(MY_UUID);
-                        ConnectThread co01 = new ConnectThread(socket);
                 }
             });
+
         }
 
         /*入力部門*/
         {
             final TextView textView3 = findViewById(R.id.statement3);
             final StringBuffer strTmp = new StringBuffer();
-                final Button button_Click_L = findViewById(R.id.button_Click_L);
-                final Button button_Click_R = findViewById(R.id.button_Click_R);
-                final Button button_go_D = findViewById(R.id.button_go_downward);
-                final Button button_go_U = findViewById(R.id.button_go_upward);
-                final Button button_go_L = findViewById(R.id.button_go_left);
-                final Button button_go_R = findViewById(R.id.button_go_right);
-                final Button button_wheel_U = findViewById(R.id.button_wheel_upward);
-                final Button button_wheel_D = findViewById(R.id.button_wheel_downward);
+            final Button button_Click_L = findViewById(R.id.button_Click_L);
+            final Button button_Click_R = findViewById(R.id.button_Click_R);
+            final Button button_go_D = findViewById(R.id.button_go_downward);
+            final Button button_go_U = findViewById(R.id.button_go_upward);
+            final Button button_go_L = findViewById(R.id.button_go_left);
+            final Button button_go_R = findViewById(R.id.button_go_right);
+            final Button button_wheel_U = findViewById(R.id.button_wheel_upward);
+            final Button button_wheel_D = findViewById(R.id.button_wheel_downward);
             //set Left-Click moving
             button_Click_L.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        strTmp.append("L");
-                        textView3.setText(strTmp);
+                @Override
+                public void onClick(View v) {
+                    strTmp.append("L");
+                    textView3.setText(strTmp);
+
+                    try {
+                        OutputStream btOutput = bluetoothSocket.getOutputStream();
+                        String strTmp = "Hello,world!!!";
+                        byte[] strByteArray = strTmp.getBytes();
+                        btOutput.write(strByteArray);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                });
+                }
+            });
             //set Right-Click moving
             button_Click_R.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -310,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
             //set Go Left moving
             button_go_L.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public  void onClick(View v){
+                public void onClick(View v) {
                     strTmp.append("←");
                     textView3.setText(strTmp);
                 }
@@ -324,9 +365,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             //set Wheel Up moving
-            button_wheel_U.setOnClickListener(new View.OnClickListener(){
+            button_wheel_U.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v){
+                public void onClick(View v) {
                     strTmp.append("▲");
                     textView3.setText(strTmp);
                 }
@@ -341,6 +382,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();

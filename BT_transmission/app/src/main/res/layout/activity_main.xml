@@ -169,4 +169,16 @@
         app:layout_constraintEnd_toStartOf="@+id/button_Click_R"
         app:layout_constraintStart_toEndOf="@+id/button_Click_L" />
 
+    <Switch
+        android:id="@+id/connect_switch1"
+        android:layout_width="83dp"
+        android:layout_height="21dp"
+        android:text="Connection"
+        app:layout_constraintBottom_toBottomOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.991"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="@+id/guideline"
+        app:layout_constraintVertical_bias="0.0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
