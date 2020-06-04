@@ -59,12 +59,10 @@
         android:layout_width="333dp"
         android:layout_height="140dp"
         android:layout_marginTop="1dp"
-        android:layout_marginBottom="1dp"
         android:isScrollContainer="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
 
         <TextView
             android:id="@+id/statement3"
@@ -171,14 +169,27 @@
 
     <Switch
         android:id="@+id/connect_switch1"
-        android:layout_width="83dp"
-        android:layout_height="21dp"
-        android:text="Connection"
+        android:layout_width="109dp"
+        android:layout_height="27dp"
+        android:text="SPP_Con"
         app:layout_constraintBottom_toBottomOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.991"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="@+id/guideline"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Switch
+        android:id="@+id/connect_switch2"
+        android:layout_width="111dp"
+        android:layout_height="26dp"
+        android:layout_marginBottom="44dp"
+        android:text="HID_Con"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/connect_switch1"
         app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

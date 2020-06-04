@@ -7,6 +7,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHidDevice;
+import android.bluetooth.BluetoothHidDeviceAppQosSettings;
+import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -37,8 +40,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.zip.CheckedOutputStream;
 
+import static android.bluetooth.BluetoothHidDevice.SUBCLASS1_MOUSE;
 import static android.content.ContentValues.TAG;
 import static com.example.bt_transmission.BTindex.MY_UUID;
+import static com.example.bt_transmission.BTindex.PSM;
 import static com.example.bt_transmission.BTindex.bluetoothAdapter;
 import static com.example.bt_transmission.BTindex.bluetoothDevice;
 import static com.example.bt_transmission.BTindex.bluetoothSocket;
@@ -50,9 +55,12 @@ class BTindex {
     public static BluetoothSocket bluetoothSocket;
     public static BluetoothDevice bluetoothDevice;
     public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    public static UUID HIDP_UUID = UUID.fromString("00000011-0000-1000-8000-00805F9B34FB");
+    public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
     public static StringBuffer strTmp = new StringBuffer();
 }
 //set Connection for Client
+/*
 class ConnectThread extends Thread {
     private final BluetoothSocket mmSocket;
     private final BluetoothDevice mmDevice;
@@ -105,7 +113,10 @@ class ConnectThread extends Thread {
         }
     }
 }
+*/
+
 //sample sending
+/*
 class MyBluetoothService {
     private static final String TAG = "MY_APP_DEBUG_TAG";
     private Handler handler; // handler that gets info from Bluetooth service
@@ -202,7 +213,7 @@ class MyBluetoothService {
         }
     }
 }
-
+*/
 public class MainActivity extends AppCompatActivity  {
 //Permission Check
 //    if (ContextCompat.checkSelfPermission(MainActivity, Manifest.permission.BLUETOOTH)
@@ -260,16 +271,17 @@ public class MainActivity extends AppCompatActivity  {
         {
             String deviceHardwareAddress = "3C:91:80:5C:1B:7C";
             bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
-            final Button button_Click_L = findViewById(R.id.button_Click_L);
-            CompoundButton button_Switch = findViewById(R.id.connect_switch1);
-            try {
-                bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            button_Switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            CompoundButton button_Switch_SPP = findViewById(R.id.connect_switch1);
+            CompoundButton button_Switch_HID = findViewById(R.id.connect_switch2);
+            //SPP connection
+            button_Switch_SPP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    try {
+                        bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     if (isChecked) {
                         try {
                             bluetoothSocket.connect();
@@ -285,13 +297,37 @@ public class MainActivity extends AppCompatActivity  {
                     }
                 }
             });
-
-
-            button_Click_L.setOnClickListener(new View.OnClickListener() {
+            //HID connection
+            button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onClick(View v) {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    try {
+                        bluetoothSocket = bluetoothDevice.createL2capChannel(PSM);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (isChecked){
+                        try {
+                        bluetoothSocket.connect();
+                        byte BTMouse_class = SUBCLASS1_MOUSE;
+                        byte[] Sdp_setting = new byte[1];
+                        Sdp_setting[0] = (byte) 0;
+                        Sdp_setting[1] = (byte) 1;
+                        BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("ASUS_T00P_BTMouse","Virtual mouse on ASUS_T00P","Programmer_Fish",BTMouse_class,Sdp_setting);
+                        //この上の行のパラメータたぶん違う todo 特にSdp_settingの値
+                        // todo https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
+                            // todo https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+                    try {
+                        bluetoothSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            });
+            }});
 
         }
 
