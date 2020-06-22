@@ -59,10 +59,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Struct;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.zip.CheckedOutputStream;
 
 import static android.bluetooth.BluetoothHidDevice.*;
@@ -70,6 +72,7 @@ import static android.bluetooth.BluetoothHidDevice.SUBCLASS1_MOUSE;
 import static android.content.ContentValues.TAG;
 import static com.example.bt_transmission.BTindex.MY_UUID;
 import static com.example.bt_transmission.BTindex.PSM;
+import static com.example.bt_transmission.BTindex.Transmit;
 import static com.example.bt_transmission.BTindex.bluetoothAdapter;
 import static com.example.bt_transmission.BTindex.bluetoothDevice;
 //import static com.example.bt_transmission.BTindex.bluetoothHidDevice;
@@ -84,6 +87,7 @@ class BTindex {
     public static BluetoothDevice bluetoothDevice;
     public static BluetoothHidDevice bluetoothHidDevice;
     public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    public static Boolean Transmit = FALSE;
 //    public static UUID HIDP_UUID = UUID.fromString("00000011-0000-1000-8000-00805F9B34FB");
     public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
     public static StringBuffer strTmp = new StringBuffer();
@@ -219,12 +223,14 @@ public class MainActivity extends AppCompatActivity  {
                     if (isChecked) {
                         try {
                             bluetoothSocket.connect();
+                            Transmit = TRUE;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     } else {
                         try {
                             bluetoothSocket.close();
+                            Transmit = FALSE;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -234,7 +240,7 @@ public class MainActivity extends AppCompatActivity  {
             //HID connection
             button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
 
                     try {
                         bluetoothSocket = bluetoothDevice.createL2capChannel(PSM);
@@ -276,20 +282,23 @@ public class MainActivity extends AppCompatActivity  {
                     if (isChecked) {
                             BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
                             //memo Sdp_settingの値は直った
-                            Executor executor = new Executor() {
+                        final TextView statusText = findViewById(R.id.status);
+
+                            class BT_CommandPalette implements Runnable{
                                 @Override
-                                public void execute(Runnable run) {
-                                    public void run() {
-                                        //todo たぶんここにボタンを押した時のhid_deviceの動き方を記述すれば良さそう 0615
-                                    }
+                                public void run() {
+                                    statusText.setText("HID on "+LocalTime.now());
                                 }
                             };
+
+                            Executor executor = Executors.newSingleThreadExecutor();
                             /*todo 下の行の修正から
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
                             */
 
                             BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, null, null,executor,callback);
+                            executor.execute(new BT_CommandPalette());
 
                                 try {
                                     bluetoothSocket.connect();
@@ -298,92 +307,7 @@ public class MainActivity extends AppCompatActivity  {
                                 }
 
 
-                        /*入力部門*/
-                        {
-                            final TextView textView3 = findViewById(R.id.statement3);
-                            final StringBuffer strTmp = new StringBuffer();
-                            final Button button_Click_L = findViewById(R.id.button_Click_L);
-                            final Button button_Click_R = findViewById(R.id.button_Click_R);
-                            final Button button_go_D = findViewById(R.id.button_go_downward);
-                            final Button button_go_U = findViewById(R.id.button_go_upward);
-                            final Button button_go_L = findViewById(R.id.button_go_left);
-                            final Button button_go_R = findViewById(R.id.button_go_right);
-                            final Button button_wheel_U = findViewById(R.id.button_wheel_upward);
-                            final Button button_wheel_D = findViewById(R.id.button_wheel_downward);
-                            //set Left-Click moving
-                            button_Click_L.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("L");
-                                    textView3.setText(strTmp);
 
-                                    try {
-                                        OutputStream btOutput = bluetoothSocket.getOutputStream();
-                                        String strTmp = "Hello,world!!!";
-                                        byte[] strByteArray = strTmp.getBytes();
-                                        btOutput.write(strByteArray);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                            //set Right-Click moving
-                            button_Click_R.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("R");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set GoDown moving
-                            button_go_D.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("↓");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set GoUp moving
-                            button_go_U.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("↑");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set Go Left moving
-                            button_go_L.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("←");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set Go Right moving
-                            button_go_R.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("→");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set Wheel Up moving
-                            button_wheel_U.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("▲");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                            //set Wheel Down moving
-                            button_wheel_D.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    strTmp.append("▼");
-                                    textView3.setText(strTmp);
-                                }
-                            });
-                        }
 
 
 //    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -403,6 +327,94 @@ public class MainActivity extends AppCompatActivity  {
                     }
                 }
             });
+            /*入力部門*/
+            {
+                final TextView textView3 = findViewById(R.id.statement3);
+                final StringBuffer strTmp = new StringBuffer();
+                final Button button_Click_L = findViewById(R.id.button_Click_L);
+                final Button button_Click_R = findViewById(R.id.button_Click_R);
+                final Button button_go_D = findViewById(R.id.button_go_downward);
+                final Button button_go_U = findViewById(R.id.button_go_upward);
+                final Button button_go_L = findViewById(R.id.button_go_left);
+                final Button button_go_R = findViewById(R.id.button_go_right);
+                final Button button_wheel_U = findViewById(R.id.button_wheel_upward);
+                final Button button_wheel_D = findViewById(R.id.button_wheel_downward);
+                //set Left-Click moving
+                button_Click_L.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("L");
+                        textView3.setText(strTmp);
+
+                        if (Transmit){
+                            try {
+                                OutputStream btOutput = bluetoothSocket.getOutputStream();
+                                String strTmp = "Hello,world!!!";
+                                byte[] strByteArray = strTmp.getBytes();
+                                btOutput.write(strByteArray);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+                //set Right-Click moving
+                button_Click_R.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("R");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set GoDown moving
+                button_go_D.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("↓");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set GoUp moving
+                button_go_U.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("↑");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set Go Left moving
+                button_go_L.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("←");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set Go Right moving
+                button_go_R.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("→");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set Wheel Up moving
+                button_wheel_U.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("▲");
+                        textView3.setText(strTmp);
+                    }
+                });
+                //set Wheel Down moving
+                button_wheel_D.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        strTmp.append("▼");
+                        textView3.setText(strTmp);
+                    }
+                });
+            }
         };
     }
 }
