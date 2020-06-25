@@ -64,7 +64,9 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.zip.CheckedOutputStream;
 
 import static android.bluetooth.BluetoothHidDevice.*;
@@ -241,12 +243,14 @@ public class MainActivity extends AppCompatActivity  {
             button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
-
+                       /*
                     try {
                         bluetoothSocket = bluetoothDevice.createL2capChannel(PSM);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
+                        */
 
                     //ここからbluetoothHidDevice.getProfileProxyの設定のための変数
                     BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
@@ -279,51 +283,35 @@ public class MainActivity extends AppCompatActivity  {
                     };
                     //ここまでbluetoothHidDevice.getProfileProxyのための変数設定
                     bluetoothAdapter.getProfileProxy(mainActivity, listener, BluetoothProfile.HID_DEVICE);
-                    if (isChecked) {
-                            BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
-                            //memo Sdp_settingの値は直った
+                    if (TRUE) { //TODO:isChecked
+                        BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
+                        //memo Sdp_settingの値は直った
                         final TextView statusText = findViewById(R.id.status);
+                        Runnable commands = new Runnable() {
+                            @Override
+                            public void run() {
+                                statusText.setText("HID on " + LocalTime.now());
+                            }
+                        };
 
-                            class BT_CommandPalette implements Runnable{
-                                @Override
-                                public void run() {
-                                    statusText.setText("HID on "+LocalTime.now());
-                                }
-                            };
+                        ExecutorService executor = Executors.newFixedThreadPool(10);
+                        executor.submit(commands);
 
-                            Executor executor = Executors.newSingleThreadExecutor();
                             /*todo 下の行の修正から
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
                             */
+                        BluetoothHidDeviceAppQosSettings qosSettings = new BluetoothHidDeviceAppQosSettings(BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT, 0, 0, 0, BluetoothHidDeviceAppQosSettings.MAX, BluetoothHidDeviceAppQosSettings.MAX);
+                        // all default
 
-                            BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, null, null,executor,callback);
-                            executor.execute(new BT_CommandPalette());
+                        BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
+                        executor.execute(commands);
 
-                                try {
-                                    bluetoothSocket.connect();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-
-
-
-
-//    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-/*        if (BTindex.bluetoothAdapter == null) {
-        // Device doesn't support Bluetooth
-    }*/
-/*        if (BTindex.bluetoothAdapter != null ) {
-        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        int REQUEST_ENABLE_BT;
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }*/
+                        try {
+                            bluetoothSocket.connect();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });
