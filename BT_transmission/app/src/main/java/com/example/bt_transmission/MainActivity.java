@@ -43,8 +43,10 @@ import android.os.UserHandle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,6 +63,7 @@ import java.io.OutputStream;
 import java.sql.Struct;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -143,6 +146,7 @@ public class MainActivity extends AppCompatActivity  {
 //    }
 
     final MainActivity mainActivity = this;
+
     @SuppressLint("SetTextI18n")
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -190,6 +194,11 @@ public class MainActivity extends AppCompatActivity  {
                 Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
                 TextView textView2 = (TextView) findViewById(R.id.statement);
                 StringBuffer viewText = new StringBuffer("These are paired Devices.\n");
+                Spinner spinner = (Spinner) findViewById(R.id.Connection_Spinner);
+                //TODO: Spinner On Chooser
+                //
+                setSpinner(spinner,pairedDevices);
+
                 if (pairedDevices.size() > 0) {
                     // There are paired devices. Get the name and address of each paired device.
                     for (BluetoothDevice device : pairedDevices) {
@@ -404,5 +413,12 @@ public class MainActivity extends AppCompatActivity  {
                 });
             }
         };
+
     }
+    private void setSpinner(Spinner spinner, Set<BluetoothDevice> arr){
+        List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>(arr);
+        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item, deviceList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+    };
 }

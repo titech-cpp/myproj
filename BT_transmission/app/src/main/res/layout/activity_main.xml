@@ -8,8 +8,8 @@
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="333dp"
-        android:layout_height="140dp"
+        android:layout_width="327dp"
+        android:layout_height="91dp"
         android:layout_marginTop="140dp"
         android:isScrollContainer="false"
         app:layout_constraintEnd_toEndOf="parent"
@@ -22,17 +22,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" />
     </ScrollView>
-
-    <Button
-        android:id="@+id/button_go_upward"
-        android:layout_width="60dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="164dp"
-        android:text="↑"
-        app:layout_constraintEnd_toEndOf="@+id/scrollView2"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@+id/scrollView2"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
 
     <TextView
         android:id="@+id/textView2"
@@ -75,55 +64,66 @@
         android:id="@+id/button_Click_R"
         android:layout_width="60dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="40dp"
+        android:layout_marginStart="8dp"
         android:text="Right Click"
-        app:layout_constraintBottom_toTopOf="@+id/button_go_right"
-        app:layout_constraintStart_toEndOf="@+id/button_go_upward"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-        app:layout_constraintVertical_bias="0.483" />
+        app:layout_constraintBottom_toTopOf="@+id/button_wheel_downward"
+        app:layout_constraintStart_toEndOf="@+id/button_wheel_downward"
+        app:layout_constraintTop_toBottomOf="@+id/button_wheel_upward"
+        app:layout_constraintVertical_bias="0.518" />
 
     <Button
-        android:id="@+id/button_Click_L"
+        android:id="@+id/button_go_upward"
         android:layout_width="60dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="40dp"
-        android:text="Left Click"
-        app:layout_constraintBottom_toTopOf="@+id/button_go_left"
-        app:layout_constraintEnd_toStartOf="@+id/button_go_upward"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-        app:layout_constraintVertical_bias="0.483" />
+        android:layout_marginTop="28dp"
+        android:text="↑"
+        app:layout_constraintEnd_toEndOf="@+id/button_wheel_downward"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/button_wheel_downward"
+        app:layout_constraintTop_toBottomOf="@+id/button_wheel_downward" />
 
     <Button
         android:id="@+id/button_go_left"
         android:layout_width="60dp"
         android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
         android:text="←"
-        app:layout_constraintEnd_toStartOf="@+id/button_go_upward"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_go_upward" />
+        app:layout_constraintBottom_toTopOf="@+id/button_go_downward"
+        app:layout_constraintEnd_toStartOf="@+id/button_go_downward"
+        app:layout_constraintTop_toBottomOf="@+id/button_go_upward"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/button_go_right"
         android:layout_width="60dp"
         android:layout_height="40dp"
+        android:layout_marginStart="8dp"
         android:text="→"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/button_go_upward"
+        app:layout_constraintBottom_toTopOf="@+id/button_go_downward"
+        app:layout_constraintStart_toEndOf="@+id/button_go_downward"
         app:layout_constraintTop_toBottomOf="@+id/button_go_upward" />
+
+    <Button
+        android:id="@+id/button_Click_L"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:text="Left Click"
+        app:layout_constraintBottom_toTopOf="@+id/button_wheel_downward"
+        app:layout_constraintEnd_toStartOf="@+id/button_wheel_downward"
+        app:layout_constraintTop_toBottomOf="@+id/button_wheel_upward"
+        app:layout_constraintVertical_bias="0.518" />
 
     <Button
         android:id="@+id/button_go_downward"
         android:layout_width="60dp"
         android:layout_height="40dp"
+        android:layout_marginBottom="48dp"
         android:text="↓"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/button_go_upward"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/button_go_upward"
-        app:layout_constraintTop_toBottomOf="@+id/button_go_upward"
-        app:layout_constraintVertical_bias="0.444" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/button_go_upward" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
@@ -152,30 +152,31 @@
         android:id="@+id/button_wheel_upward"
         android:layout_width="60dp"
         android:layout_height="40dp"
+        android:layout_marginTop="60dp"
         android:text="▲"
-        app:layout_constraintBottom_toTopOf="@+id/button_Click_R"
-        app:layout_constraintEnd_toStartOf="@+id/button_Click_R"
-        app:layout_constraintStart_toEndOf="@+id/button_Click_L" />
+        app:layout_constraintEnd_toEndOf="@+id/scrollView2"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
 
     <Button
         android:id="@+id/button_wheel_downward"
-        android:layout_width="60dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="24dp"
+        android:layout_width="55dp"
+        android:layout_height="42dp"
         android:text="▼"
-        app:layout_constraintBottom_toTopOf="@+id/button_go_upward"
-        app:layout_constraintEnd_toStartOf="@+id/button_Click_R"
-        app:layout_constraintStart_toEndOf="@+id/button_Click_L" />
+        app:layout_constraintEnd_toEndOf="@+id/button_wheel_upward"
+        app:layout_constraintStart_toStartOf="@+id/button_wheel_upward"
+        tools:layout_editor_absoluteY="487dp" />
 
     <Switch
         android:id="@+id/connect_switch1"
         android:layout_width="109dp"
         android:layout_height="27dp"
         android:text="SPP_Con"
-        app:layout_constraintBottom_toBottomOf="@+id/textView"
+        app:layout_constraintBottom_toBottomOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.991"
-        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toTopOf="@+id/guideline"
         app:layout_constraintVertical_bias="0.0" />
 
@@ -191,5 +192,12 @@
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/connect_switch1"
         app:layout_constraintVertical_bias="0.0" />
+
+    <Spinner
+        android:id="@+id/Connection_Spinner"
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        tools:layout_editor_absoluteX="1dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
