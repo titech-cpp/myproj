@@ -1,12 +1,8 @@
 package com.example.bt_transmission;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.Manifest;
 import android.annotation.SuppressLint;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHidDevice;
@@ -14,89 +10,49 @@ import android.bluetooth.BluetoothHidDeviceAppQosSettings;
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.IntentSender;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.database.DatabaseErrorHandler;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 
-//import android.support.*;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.os.UserHandle;
-import android.util.Log;
-import android.view.Display;
+import android.util.Pair;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Struct;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.zip.CheckedOutputStream;
 
 import static android.bluetooth.BluetoothHidDevice.*;
-import static android.bluetooth.BluetoothHidDevice.SUBCLASS1_MOUSE;
-import static android.content.ContentValues.TAG;
+import static android.widget.AdapterView.*;
 import static com.example.bt_transmission.BTindex.MY_UUID;
 import static com.example.bt_transmission.BTindex.PSM;
 import static com.example.bt_transmission.BTindex.Transmit;
 import static com.example.bt_transmission.BTindex.bluetoothAdapter;
-import static com.example.bt_transmission.BTindex.bluetoothDevice;
-//import static com.example.bt_transmission.BTindex.bluetoothHidDevice;
 import static com.example.bt_transmission.BTindex.bluetoothSocket;
-import static com.example.bt_transmission.BTindex.strTmp;
+import static com.example.bt_transmission.BTindex.targetMACaddress;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    public static BluetoothSocket bluetoothSocket;
-    public static BluetoothDevice bluetoothDevice;
+    public static BluetoothSocket bluetoothSocket = null;
     public static BluetoothHidDevice bluetoothHidDevice;
     public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public static Boolean Transmit = FALSE;
-//    public static UUID HIDP_UUID = UUID.fromString("00000011-0000-1000-8000-00805F9B34FB");
     public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
-    public static StringBuffer strTmp = new StringBuffer();
-    public static  final String targetMACaddress = "3C:91:80:5C:1B:7C";
+    public static String targetMACaddress = "00:00:00:00:00:00";
     public static final byte[] discriptor = new byte[]{
         //HID discriptor on https://www.usb.org/sites/default/files/hid1_11.pdf
             0x09, // bLength
@@ -153,29 +109,8 @@ public class MainActivity extends AppCompatActivity  {
         /*接続部門．動作チェック済み*/
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        //setting receicer
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                TextView textView = findViewById(R.id.statement);
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    // Discovery has found a device. Get the BluetoothDevice
-                    // object and its info from the Intent.
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    String deviceName = device.getName();
-                    String deviceMACAddress = device.getAddress();
-                    StringBuffer strTmp = new StringBuffer(deviceName);
-                    strTmp.append(deviceMACAddress);
-                    textView.setText(strTmp);
-                }
-            }
-        };
-        registerReceiver(receiver, filter);
-
-
         {
-            TextView textView = findViewById(R.id.statement);
+            TextView textView = findViewById(R.id.status);
             if (BTindex.bluetoothAdapter == null) {
                 //Device doesn"t support Bluetooth
                 textView.setText(R.string.unsupport);
@@ -192,34 +127,23 @@ public class MainActivity extends AppCompatActivity  {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             } else {
                 Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
-                TextView textView2 = (TextView) findViewById(R.id.statement);
-                StringBuffer viewText = new StringBuffer("These are paired Devices.\n");
-                Spinner spinner = (Spinner) findViewById(R.id.Connection_Spinner);
-                //TODO: Spinner On Chooser
-                //
+                final Spinner spinner = (Spinner) findViewById(R.id.Connection_Spinner);
                 setSpinner(spinner,pairedDevices);
-
-                if (pairedDevices.size() > 0) {
-                    // There are paired devices. Get the name and address of each paired device.
-                    for (BluetoothDevice device : pairedDevices) {
-                        String deviceName = device.getName();
-                        String deviceHardwareAddress = device.getAddress(); // MAC address
-                        viewText.append(deviceName);
-                        viewText.append("\t");
-                        viewText.append(deviceHardwareAddress);
-                        viewText.append("\n\t");
-                        viewText.append(strTmp);
-                        strTmp.delete(0, strTmp.length());
-                    }
-                    textView2.setText(viewText);
-                }
+                spinner.setOnItemSelectedListener(
+                        new OnItemSelectedListener(){
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view,int position, long id){
+                                NameAddressPair pair = (NameAddressPair) spinner.getSelectedItem();
+                                targetMACaddress = pair.getAddress();
+                                Toast.makeText(parent.getContext(),pair.getAddress() +"is selected",Toast.LENGTH_SHORT).show();
+                            };
+                            public void onNothingSelected(AdapterView<?> adapter){}
+                        }
+                );
             }
 
         }
-        // sample sending operator　なんもわからん
         {
-            String deviceHardwareAddress = BTindex.targetMACaddress;
-            bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
             CompoundButton button_Switch_SPP = findViewById(R.id.connect_switch1);
             CompoundButton button_Switch_HID = findViewById(R.id.connect_switch2);
             //SPP connection
@@ -227,23 +151,28 @@ public class MainActivity extends AppCompatActivity  {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     try {
+                        BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
                         bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if (isChecked) {
-                        try {
-                            bluetoothSocket.connect();
-                            Transmit = TRUE;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        try {
-                            bluetoothSocket.close();
-                            Transmit = FALSE;
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                    if (bluetoothSocket != null){
+                        if (isChecked){
+                            try {
+                                bluetoothSocket.connect();
+                                Transmit = TRUE;
+                                Toast.makeText(mainActivity,"Hello SPP",Toast.LENGTH_SHORT).show();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            try {
+                                bluetoothSocket.close();
+                                Transmit = FALSE;
+                                Toast.makeText(mainActivity,"Good bye",Toast.LENGTH_SHORT).show();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -251,37 +180,24 @@ public class MainActivity extends AppCompatActivity  {
             //HID connection
             button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
-                       /*
+                public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
                     try {
+                        BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
                         bluetoothSocket = bluetoothDevice.createL2capChannel(PSM);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                        */
-
                     //ここからbluetoothHidDevice.getProfileProxyの設定のための変数
                     BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
                         @Override
                         public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                            Context context = getApplicationContext();
-                            CharSequence text = "Connected on "+ profile;
-                            int duration = Toast.LENGTH_SHORT;
-
-                            Toast toast = Toast.makeText(context, text, duration);
-                            toast.show();
+                            Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onServiceDisconnected(int profile) {
-                            Context context = getApplicationContext();
-                            CharSequence text = "Goodbye!!";
-                            int duration = Toast.LENGTH_SHORT;
-
-                            Toast toast = Toast.makeText(context, text, duration);
-                            toast.show();
-
+                            Toast.makeText(mainActivity, "Good bye" + profile, Toast.LENGTH_SHORT).show();
                         }
                     };
                     Callback callback = new Callback() {
@@ -361,6 +277,17 @@ public class MainActivity extends AppCompatActivity  {
                     public void onClick(View v) {
                         strTmp.append("R");
                         textView3.setText(strTmp);
+
+                        if (TRUE){
+                            try {
+                                OutputStream btOutput = bluetoothSocket.getOutputStream();
+                                String strTmp = "Hello,world!!!";
+                                byte[] strByteArray = strTmp.getBytes();
+                                btOutput.write(strByteArray);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 });
                 //set GoDown moving
@@ -416,9 +343,62 @@ public class MainActivity extends AppCompatActivity  {
 
     }
     private void setSpinner(Spinner spinner, Set<BluetoothDevice> arr){
-        List<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>(arr);
-        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item, deviceList);
+        // There are paired devices. Get the name and address of each paired device.
+        List<NameAddressPair> deviceInfoList = new ArrayList<>();
+        for (BluetoothDevice device : arr) {
+            NameAddressPair pair = new NameAddressPair(device.getName(),device.getAddress());
+            deviceInfoList.add(pair);
+        }
+        List<String> deviceNameList = new ArrayList<>();
+        NameAddressPairArrayAdapter adapter = new NameAddressPairArrayAdapter(this,android.R.layout.simple_spinner_item, deviceInfoList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
     };
+    public class NameAddressPair extends Pair<String,String> {
+      public NameAddressPair(String name, String address){
+          super(name,address);
+      }
+      public String getName(){
+          return super.first;
+      }
+      public String getAddress(){
+          return super.second;
+      }
+    };
+    public class NameAddressPairArrayAdapter extends ArrayAdapter<NameAddressPair>{
+        public NameAddressPairArrayAdapter(Context context, int textViewResourceId, List<NameAddressPair> list){
+            super(context, textViewResourceId, list);
+        }
+        public NameAddressPairArrayAdapter(Context context, int textViewResourceId){
+            super(context, textViewResourceId);
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent){
+            TextView view = (TextView) super.getView(position,convertView,parent);
+            view.setText(getItem(position).getName());
+            return view;
+        }
+
+        public int getPosition(String name){
+            int position = -1;
+            for (int i=0; i < this.getCount();i++){
+                if (this.getItem(i).getName() == name){
+                    position = i;
+                    break;
+                }
+            }
+            return position;
+        }
+
+        public String getAddress(String name){
+            int position = 0;
+            for (int i=0; i < this.getCount();i++){
+                if (this.getItem(i).getName() == name){
+                    position = i;
+                    break;
+                }
+            }
+            return this.getItem(position).getAddress();
+        }
+    }
 }
