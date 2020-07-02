@@ -40,6 +40,7 @@ import static com.example.bt_transmission.BTindex.MY_UUID;
 import static com.example.bt_transmission.BTindex.PSM;
 import static com.example.bt_transmission.BTindex.Transmit;
 import static com.example.bt_transmission.BTindex.bluetoothAdapter;
+import static com.example.bt_transmission.BTindex.bluetoothHidDevice;
 import static com.example.bt_transmission.BTindex.bluetoothSocket;
 import static com.example.bt_transmission.BTindex.targetMACaddress;
 import static java.lang.Boolean.FALSE;
@@ -48,7 +49,7 @@ import static java.lang.Boolean.TRUE;
 class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     public static BluetoothSocket bluetoothSocket = null;
-    public static BluetoothHidDevice bluetoothHidDevice;
+    public static BluetoothHidDevice bluetoothHidDevice = null;
     public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public static Boolean Transmit = FALSE;
     public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
@@ -169,6 +170,7 @@ public class MainActivity extends AppCompatActivity  {
                             try {
                                 bluetoothSocket.close();
                                 Transmit = FALSE;
+                                bluetoothSocket = null;
                                 Toast.makeText(mainActivity,"Good bye",Toast.LENGTH_SHORT).show();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -193,11 +195,17 @@ public class MainActivity extends AppCompatActivity  {
                         @Override
                         public void onServiceConnected(int profile, BluetoothProfile proxy) {
                             Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
+                            if (profile == BluetoothProfile.HID_DEVICE){
+                                BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
+                            }
                         }
 
                         @Override
                         public void onServiceDisconnected(int profile) {
                             Toast.makeText(mainActivity, "Good bye" + profile, Toast.LENGTH_SHORT).show();
+                            if (profile == BluetoothHidDevice.HID_DEVICE){
+                                bluetoothHidDevice = null;
+                            }
                         }
                     };
                     Callback callback = new Callback() {
@@ -208,14 +216,14 @@ public class MainActivity extends AppCompatActivity  {
                     };
                     //ここまでbluetoothHidDevice.getProfileProxyのための変数設定
                     bluetoothAdapter.getProfileProxy(mainActivity, listener, BluetoothProfile.HID_DEVICE);
-                    if (TRUE) { //TODO:isChecked
+                    if (isChecked) {
                         BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
                         //memo Sdp_settingの値は直った
                         final TextView statusText = findViewById(R.id.status);
                         Runnable commands = new Runnable() {
                             @Override
                             public void run() {
-                                statusText.setText("HID on " + LocalTime.now());
+                                    statusText.setText("HID on " + LocalTime.now());
                             }
                         };
 
@@ -228,15 +236,27 @@ public class MainActivity extends AppCompatActivity  {
                             */
                         BluetoothHidDeviceAppQosSettings qosSettings = new BluetoothHidDeviceAppQosSettings(BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT, 0, 0, 0, BluetoothHidDeviceAppQosSettings.MAX, BluetoothHidDeviceAppQosSettings.MAX);
                         // all default
+                        if (bluetoothHidDevice == null){
+                            Toast.makeText(mainActivity,"NULL",Toast.LENGTH_SHORT).show();
+                        }else{
 
-                        BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
-                        executor.execute(commands);
+                            BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
+                            executor.execute(commands);
+
+                        }
 
                         try {
                             bluetoothSocket.connect();
+                            Transmit = TRUE;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    }else try {
+                        bluetoothSocket.close();
+                        Transmit = FALSE;
+                        bluetoothSocket = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             });
