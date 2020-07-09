@@ -38,8 +38,10 @@ import static android.bluetooth.BluetoothHidDevice.*;
 import static android.widget.AdapterView.*;
 import static com.example.bt_transmission.BTindex.MY_UUID;
 import static com.example.bt_transmission.BTindex.PSM;
-import static com.example.bt_transmission.BTindex.Transmit;
+import static com.example.bt_transmission.BTindex.Transmit_SPP;
+import static com.example.bt_transmission.BTindex.Transmit_HID;
 import static com.example.bt_transmission.BTindex.bluetoothAdapter;
+import static com.example.bt_transmission.BTindex.bluetoothDevice;
 import static com.example.bt_transmission.BTindex.bluetoothHidDevice;
 import static com.example.bt_transmission.BTindex.bluetoothSocket;
 import static com.example.bt_transmission.BTindex.targetMACaddress;
@@ -50,8 +52,10 @@ class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     public static BluetoothSocket bluetoothSocket = null;
     public static BluetoothHidDevice bluetoothHidDevice = null;
+    public static BluetoothDevice bluetoothDevice = null;
     public static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    public static Boolean Transmit = FALSE;
+    public static Boolean Transmit_SPP = FALSE;
+    public static Boolean Transmit_HID = FALSE;
     public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
     public static String targetMACaddress = "00:00:00:00:00:00";
     public static final byte[] discriptor = new byte[]{
@@ -152,8 +156,8 @@ public class MainActivity extends AppCompatActivity  {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     try {
-                        BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
-                        bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                        BTindex.bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
+                        bluetoothSocket = BTindex.bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -161,7 +165,7 @@ public class MainActivity extends AppCompatActivity  {
                         if (isChecked){
                             try {
                                 bluetoothSocket.connect();
-                                Transmit = TRUE;
+                                Transmit_SPP = TRUE;
                                 Toast.makeText(mainActivity,"Hello SPP",Toast.LENGTH_SHORT).show();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -169,7 +173,7 @@ public class MainActivity extends AppCompatActivity  {
                         }else{
                             try {
                                 bluetoothSocket.close();
-                                Transmit = FALSE;
+                                Transmit_SPP = FALSE;
                                 bluetoothSocket = null;
                                 Toast.makeText(mainActivity,"Good bye",Toast.LENGTH_SHORT).show();
                             } catch (IOException e) {
@@ -184,8 +188,8 @@ public class MainActivity extends AppCompatActivity  {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
                     try {
-                        BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
-                        bluetoothSocket = bluetoothDevice.createL2capChannel(PSM);
+                        BTindex.bluetoothDevice = bluetoothAdapter.getRemoteDevice(targetMACaddress);
+                        bluetoothSocket = BTindex.bluetoothDevice.createL2capChannel(PSM);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -247,13 +251,13 @@ public class MainActivity extends AppCompatActivity  {
 
                         try {
                             bluetoothSocket.connect();
-                            Transmit = TRUE;
+                            Transmit_HID = TRUE;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }else try {
                         bluetoothSocket.close();
-                        Transmit = FALSE;
+                        Transmit_HID = FALSE;
                         bluetoothSocket = null;
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -279,7 +283,7 @@ public class MainActivity extends AppCompatActivity  {
                         strTmp.append("L");
                         textView3.setText(strTmp);
 
-                        if (Transmit){
+                        if (Transmit_SPP){
                             try {
                                 OutputStream btOutput = bluetoothSocket.getOutputStream();
                                 String strTmp = "Hello,world!!!";
@@ -289,6 +293,9 @@ public class MainActivity extends AppCompatActivity  {
                                 e.printStackTrace();
                             }
                         }
+                        if (Transmit_HID){
+                            bluetoothHidDevice.sendReport(bluetoothDevice,0,new byte[]{(byte) 0,(byte) 1});
+                        }//todo 何入れるか問題
                     }
                 });
                 //set Right-Click moving
@@ -298,7 +305,7 @@ public class MainActivity extends AppCompatActivity  {
                         strTmp.append("R");
                         textView3.setText(strTmp);
 
-                        if (TRUE){
+                        if (Transmit_SPP){
                             try {
                                 OutputStream btOutput = bluetoothSocket.getOutputStream();
                                 String strTmp = "Hello,world!!!";
