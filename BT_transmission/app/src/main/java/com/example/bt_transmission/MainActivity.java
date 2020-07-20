@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 
 import android.util.Pair;
@@ -198,8 +199,8 @@ public class MainActivity extends AppCompatActivity  {
                     BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
                         @Override
                         public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                            Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
-                            if (profile == BluetoothProfile.HID_DEVICE){
+                            if (profile == BluetoothProfile.HID_DEVICE){//todo check HID device or INPUT_HOST
+                                Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
                                 BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
                             }
                         }
@@ -233,8 +234,8 @@ public class MainActivity extends AppCompatActivity  {
 
                         ExecutorService executor = Executors.newFixedThreadPool(10);
                         executor.submit(commands);
-
-                            /*todo 下の行の修正から
+                            //todo bindServiceについて
+                            /*下の行の修正から
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
                             */
@@ -248,8 +249,19 @@ public class MainActivity extends AppCompatActivity  {
                             executor.execute(commands);
 
                         }
+                        try {
+                            Intent intent = new Intent();
+                            if (listener == null){
+                                throw new Exception("Listener NULL");
+                            }
+                            bindService(intent, (ServiceConnection) listener,0);
+
+                        }catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                         try {
+
                             bluetoothSocket.connect();
                             Transmit_HID = TRUE;
                         } catch (IOException e) {
@@ -294,7 +306,7 @@ public class MainActivity extends AppCompatActivity  {
                             }
                         }
                         if (Transmit_HID){
-                            bluetoothHidDevice.sendReport(bluetoothDevice,0,new byte[]{(byte) 0,(byte) 1});
+                            bluetoothHidDevice.sendReport(bluetoothDevice,0,new byte[]{(byte) 0,(byte) 0,(byte) 127});
                         }//todo 何入れるか問題
                     }
                 });
