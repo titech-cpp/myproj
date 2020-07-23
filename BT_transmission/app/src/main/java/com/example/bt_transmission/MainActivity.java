@@ -10,11 +10,16 @@ import android.bluetooth.BluetoothHidDeviceAppQosSettings;
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -250,11 +256,9 @@ public class MainActivity extends AppCompatActivity  {
 
                         }
                         try {
-                            Intent intent = new Intent();
-                            if (listener == null){
-                                throw new Exception("Listener NULL");
-                            }
-                            bindService(intent, (ServiceConnection) listener,0);
+                            Intent intent = new Intent(mainActivity,mainActivity.getClass());
+                            bluetoothService service = new bluetoothService();
+                            bindService(intent, (ServiceConnection) service,0);
 
                         }catch (Exception e) {
                             e.printStackTrace();
@@ -440,4 +444,98 @@ public class MainActivity extends AppCompatActivity  {
             return this.getItem(position).getAddress();
         }
     }
-}
+    public static class bluetoothService implements ServiceConnection{
+        private Handler handler;
+
+        public static final int SENDING = 0;
+        public static final int PENDING = 1;
+
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (profile == BluetoothProfile.HID_DEVICE){//todo check HID device or INPUT_HOST
+                Log.i("onConnected","Connected On HID");
+                BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
+            }
+        }
+
+        public void onServiceDisconnected(int profile) {
+            Log.i("Bye","Disconnected On HID");
+            if (profile == BluetoothHidDevice.HID_DEVICE){
+                bluetoothHidDevice = null;
+            }
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+
+        private class ConnectedThread extends Thread{
+            private static final String TAG = "Transmitter";
+            private BluetoothSocket mmSocket = null;
+            private InputStream mmInStream = null;
+            private OutputStream mmOutStream = null;
+            private byte[] mmBuffer = null;
+
+            public ConnectedThread(BluetoothSocket socket){
+                mmSocket = socket;
+                InputStream tmpIn = null;
+                OutputStream tmpOut = null;
+
+                try {
+                    tmpIn = socket.getInputStream();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error occurred when creating input stream", e);
+                }
+                try {
+                    tmpOut = socket.getOutputStream();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error occurred when creating output stream", e);
+                }
+
+                mmInStream = tmpIn;
+                mmOutStream = tmpOut;
+            }
+            /*
+
+            // Call this from the main activity to send data to the remote device.
+            public void write(byte[] bytes) {
+                try {
+                    mmOutStream.write(bytes);
+
+                    // Share the sent message with the UI activity.
+                    Message writtenMsg = handler.obtainMessage(
+                            MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                    writtenMsg.sendToTarget();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error occurred when sending data", e);
+
+                    // Send a failure message back to the activity.
+                    Message writeErrorMsg =
+                            handler.obtainMessage(MessageConstants.MESSAGE_TOAST);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("toast",
+                            "Couldn't send data to the other device");
+                    writeErrorMsg.setData(bundle);
+                    handler.sendMessage(writeErrorMsg);
+                }
+            }
+
+             */
+
+            // Call this method from the main activity to shut down the connection.
+            public void cancel() {
+                try {
+                    mmSocket.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Could not close the connect socket", e);
+                }
+            }
+        }
+        }
+
+    }
