@@ -174,6 +174,15 @@ public class MainActivity extends AppCompatActivity  {
                                 bluetoothSocket.connect();
                                 Transmit_SPP = TRUE;
                                 Toast.makeText(mainActivity,"Hello SPP",Toast.LENGTH_SHORT).show();
+                                final TextView statusText = findViewById(R.id.status);
+                                Runnable commands = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        statusText.setText("SPP on " + LocalTime.now());
+                                    }
+                                };
+                                ExecutorService executor = Executors.newFixedThreadPool(10);
+                                executor.submit(commands);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -258,11 +267,13 @@ public class MainActivity extends AppCompatActivity  {
                         try {
                             Intent intent = new Intent(mainActivity,mainActivity.getClass());
                             bluetoothService service = new bluetoothService();
-                            bindService(intent, (ServiceConnection) service,0);
+                            bindService(intent, service,0);
 
                         }catch (Exception e) {
                             e.printStackTrace();
                         }
+                        // todo : BluetoothService Check
+                        /* SPP とはつなぎ方がどうも違うらしい
 
                         try {
 
@@ -270,8 +281,8 @@ public class MainActivity extends AppCompatActivity  {
                             Transmit_HID = TRUE;
                         } catch (IOException e) {
                             e.printStackTrace();
-                        }
-                    }else try {
+                        }else*/
+                    } try {
                         bluetoothSocket.close();
                         Transmit_HID = FALSE;
                         bluetoothSocket = null;
