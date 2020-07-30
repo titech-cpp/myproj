@@ -14,6 +14,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Binder;
 import android.os.Bundle;
 
 import android.os.Handler;
@@ -36,6 +37,7 @@ import java.io.OutputStream;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -65,6 +67,7 @@ class BTindex {
     public static Boolean Transmit_HID = FALSE;
     public static int PSM = 0013;//HID_Interrupt on https://www.bluetooth.com/ja-jp/specifications/assigned-numbers/logical-link-control/
     public static String targetMACaddress = "00:00:00:00:00:00";
+    public static MainActivity mainActivity = null;
     public static final byte[] discriptor = new byte[]{
         //HID discriptor on https://www.usb.org/sites/default/files/hid1_11.pdf
             0x09, // bLength
@@ -158,7 +161,8 @@ public class MainActivity extends AppCompatActivity  {
         {
             CompoundButton button_Switch_SPP = findViewById(R.id.connect_switch1);
             CompoundButton button_Switch_HID = findViewById(R.id.connect_switch2);
-            //SPP connection
+            //SPP connection todo COMMENT OUTED
+            /*
             button_Switch_SPP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -199,8 +203,27 @@ public class MainActivity extends AppCompatActivity  {
                     }
                 }
             });
+                         */
             //HID connection
-            button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {                        BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
+                //memo Sdp_settingの値は直った
+                final TextView statusText = findViewById(R.id.status);
+                Runnable commands = new Runnable() {
+                    @Override
+                    public void run() {
+                        statusText.setText("HID on " + LocalTime.now());
+                    }
+                };
+
+                ExecutorService executor = Executors.newFixedThreadPool(10);
+                BluetoothHidDeviceAppQosSettings qosSettings = new BluetoothHidDeviceAppQosSettings(BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT, 0, 0, 0, BluetoothHidDeviceAppQosSettings.MAX, BluetoothHidDeviceAppQosSettings.MAX);
+                // all default
+                Callback callback = new Callback() {
+                    @Override
+                    public void onGetReport(BluetoothDevice device, byte type, byte id, int bufferSize) {
+                        super.onGetReport(device, type, id, bufferSize);
+                    }
+                };
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
                     try {
@@ -214,9 +237,12 @@ public class MainActivity extends AppCompatActivity  {
                     BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
                         @Override
                         public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                            if (profile == BluetoothProfile.HID_DEVICE){//todo check HID device or INPUT_HOST
+                            Toast.makeText(mainActivity,"HERE",Toast.LENGTH_SHORT).show();
+                            if (profile == BluetoothProfile.HID_DEVICE){//note: check HID device (or INPUT_HOST)
                                 Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
                                 BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
+                                BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
+                                executor.execute(commands);
                             }
                         }
 
@@ -228,60 +254,36 @@ public class MainActivity extends AppCompatActivity  {
                             }
                         }
                     };
-                    Callback callback = new Callback() {
-                        @Override
-                        public void onGetReport(BluetoothDevice device, byte type, byte id, int bufferSize) {
-                            super.onGetReport(device, type, id, bufferSize);
-                        }
-                    };
                     //ここまでbluetoothHidDevice.getProfileProxyのための変数設定
                     bluetoothAdapter.getProfileProxy(mainActivity, listener, BluetoothProfile.HID_DEVICE);
+                    //bluetoothService service = new bluetoothService();
                     if (isChecked) {
-                        BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
-                        //memo Sdp_settingの値は直った
-                        final TextView statusText = findViewById(R.id.status);
-                        Runnable commands = new Runnable() {
-                            @Override
-                            public void run() {
-                                    statusText.setText("HID on " + LocalTime.now());
-                            }
-                        };
 
-                        ExecutorService executor = Executors.newFixedThreadPool(10);
-                        executor.submit(commands);
                             //todo bindServiceについて
                             /*下の行の修正から
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
                                https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
                             */
-                        BluetoothHidDeviceAppQosSettings qosSettings = new BluetoothHidDeviceAppQosSettings(BluetoothHidDeviceAppQosSettings.SERVICE_BEST_EFFORT, 0, 0, 0, BluetoothHidDeviceAppQosSettings.MAX, BluetoothHidDeviceAppQosSettings.MAX);
-                        // all default
+
                         if (bluetoothHidDevice == null){
                             Toast.makeText(mainActivity,"NULL",Toast.LENGTH_SHORT).show();
                         }else{
 
                             BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
                             executor.execute(commands);
+                            bluetoothHidDevice.connect(bluetoothDevice);
+                            Transmit_HID = TRUE;
 
                         }
                         try {
-                            Intent intent = new Intent(mainActivity,mainActivity.getClass());
-                            bluetoothService service = new bluetoothService();
-                            bindService(intent, service,0);
+                            //Intent intent = new Intent(mainActivity,bluetoothService.class);
+                            //bindService(intent,service,Context.BIND_AUTO_CREATE);
 
                         }catch (Exception e) {
                             e.printStackTrace();
                         }
                         // todo : BluetoothService Check
-                        /* SPP とはつなぎ方がどうも違うらしい
-
-                        try {
-
-                            bluetoothSocket.connect();
-                            Transmit_HID = TRUE;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }else*/
+                        // SPP とはつなぎ方がどうも違うらしい
                     } try {
                         bluetoothSocket.close();
                         Transmit_HID = FALSE;
@@ -291,7 +293,7 @@ public class MainActivity extends AppCompatActivity  {
                     }
                 }
             });
-            /*入力部門*/
+            //入力部門
             {
                 final TextView textView3 = findViewById(R.id.statement3);
                 final StringBuffer strTmp = new StringBuffer();
@@ -455,25 +457,34 @@ public class MainActivity extends AppCompatActivity  {
             return this.getItem(position).getAddress();
         }
     }
-    public static class bluetoothService implements ServiceConnection{
+    /*
+    public class bluetoothService implements ServiceConnection{
         private Handler handler;
+        public class MyServiceLocalBinder extends Binder {
+            //&#x30b5;&#x30fc;&#x30d3;&#x30b9;&#x306e;&#x53d6;&#x5f97;
+            bluetoothService getService() {
+                return bluetoothService.this;
+            }
+        }
 
         public static final int SENDING = 0;
         public static final int PENDING = 1;
+        private final IBinder mBinder = new MyServiceLocalBinder();
 
-        public void onServiceConnected(int profile, BluetoothProfile proxy) {
-            if (profile == BluetoothProfile.HID_DEVICE){//todo check HID device or INPUT_HOST
-                Log.i("onConnected","Connected On HID");
-                BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
-            }
+        public IBinder onBind(Intent intent){
+            Log.i("LINE460","ON BIND");
+            return mBinder;
+        }
+        public void onUnbind(Intent intent){
+            Log.i("LINE473", "onUnbind" + ": " + intent);
+        }
+        //todo: Method for Clients
+        public int getRandomNumber(){
+            final Random random = new Random();
+            return random.nextInt(100);
         }
 
-        public void onServiceDisconnected(int profile) {
-            Log.i("Bye","Disconnected On HID");
-            if (profile == BluetoothHidDevice.HID_DEVICE){
-                bluetoothHidDevice = null;
-            }
-        }
+
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -483,6 +494,19 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
+        }
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (profile == BluetoothProfile.HID_DEVICE){//note:check HID device (or INPUT_HOST)
+                Log.i("onConnected","Connected On HID");
+                BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
+            }
+        }
+
+        public void onServiceDisconnected(int profile) {
+            Log.i("Bye","Disconnected On HID");
+            if (profile == BluetoothHidDevice.HID_DEVICE){
+                BTindex.bluetoothHidDevice = null;
+            }
         }
 
         private class ConnectedThread extends Thread{
@@ -511,7 +535,7 @@ public class MainActivity extends AppCompatActivity  {
                 mmInStream = tmpIn;
                 mmOutStream = tmpOut;
             }
-            /*
+
 
             // Call this from the main activity to send data to the remote device.
             public void write(byte[] bytes) {
@@ -520,14 +544,14 @@ public class MainActivity extends AppCompatActivity  {
 
                     // Share the sent message with the UI activity.
                     Message writtenMsg = handler.obtainMessage(
-                            MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                            1, -1, -1, mmBuffer);//MessageConstants.MESSAGE_WRITE = 1
                     writtenMsg.sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "Error occurred when sending data", e);
 
                     // Send a failure message back to the activity.
                     Message writeErrorMsg =
-                            handler.obtainMessage(MessageConstants.MESSAGE_TOAST);
+                            handler.obtainMessage(2);//MessageConstants.MESSAGE_TOAST=2
                     Bundle bundle = new Bundle();
                     bundle.putString("toast",
                             "Couldn't send data to the other device");
@@ -536,7 +560,7 @@ public class MainActivity extends AppCompatActivity  {
                 }
             }
 
-             */
+
 
             // Call this method from the main activity to shut down the connection.
             public void cancel() {
@@ -547,6 +571,8 @@ public class MainActivity extends AppCompatActivity  {
                 }
             }
         }
-        }
-
     }
+    */
+}
+
+
