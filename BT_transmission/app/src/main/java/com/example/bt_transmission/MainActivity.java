@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity  {
 //    }
 
     final MainActivity mainActivity = this;
+    private void viewInfo(String str){
+        Toast.makeText(mainActivity,str,Toast.LENGTH_SHORT).show();
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -140,17 +143,16 @@ public class MainActivity extends AppCompatActivity  {
                 int REQUEST_ENABLE_BT = 100;
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            } else {
+            } else {//show spinner
                 Set<BluetoothDevice> pairedDevices = BTindex.bluetoothAdapter.getBondedDevices();
                 final Spinner spinner = (Spinner) findViewById(R.id.Connection_Spinner);
                 setSpinner(spinner,pairedDevices);
                 spinner.setOnItemSelectedListener(
                         new OnItemSelectedListener(){
-                            @Override
                             public void onItemSelected(AdapterView<?> parent, View view,int position, long id){
                                 NameAddressPair pair = (NameAddressPair) spinner.getSelectedItem();
                                 targetMACaddress = pair.getAddress();
-                                Toast.makeText(parent.getContext(),pair.getAddress() +"is selected",Toast.LENGTH_SHORT).show();
+                                viewInfo(pair.getAddress() +"is selected");
                             };
                             public void onNothingSelected(AdapterView<?> adapter){}
                         }
@@ -203,9 +205,10 @@ public class MainActivity extends AppCompatActivity  {
                     }
                 }
             });
-                         */
+            */
             //HID connection
-            button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {                        BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
+            button_Switch_HID.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                BluetoothHidDeviceAppSdpSettings Sdp_Setting = new BluetoothHidDeviceAppSdpSettings("Real_BTMouse", "Virtual mouse on Real", "Programmer_Fish", SUBCLASS1_MOUSE, BTindex.discriptor);
                 //memo Sdp_settingの値は直った
                 final TextView statusText = findViewById(R.id.status);
                 Runnable commands = new Runnable() {
@@ -235,18 +238,18 @@ public class MainActivity extends AppCompatActivity  {
 
                     //ここからbluetoothHidDevice.getProfileProxyの設定のための変数
                     BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
-                        @Override
+                        //@Override
                         public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                            Toast.makeText(mainActivity,"HERE",Toast.LENGTH_SHORT).show();
+                            viewInfo("HERE");
                             if (profile == BluetoothProfile.HID_DEVICE){//note: check HID device (or INPUT_HOST)
-                                Toast.makeText(mainActivity, "Connected" + profile, Toast.LENGTH_SHORT).show();
+                                viewInfo("Connected" + profile);
                                 BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
                                 BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
                                 executor.execute(commands);
                             }
                         }
 
-                        @Override
+                        //@Override
                         public void onServiceDisconnected(int profile) {
                             Toast.makeText(mainActivity, "Good bye" + profile, Toast.LENGTH_SHORT).show();
                             if (profile == BluetoothHidDevice.HID_DEVICE){
@@ -260,20 +263,17 @@ public class MainActivity extends AppCompatActivity  {
                     if (isChecked) {
 
                             //todo bindServiceについて
-                            /*下の行の修正から
-                               https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
-                               https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
-                            */
+                              // https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
+                              // https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
+
 
                         if (bluetoothHidDevice == null){
-                            Toast.makeText(mainActivity,"NULL",Toast.LENGTH_SHORT).show();
+                            viewInfo("NULL");
                         }else{
-
                             BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
                             executor.execute(commands);
                             bluetoothHidDevice.connect(bluetoothDevice);
                             Transmit_HID = TRUE;
-
                         }
                         try {
                             //Intent intent = new Intent(mainActivity,bluetoothService.class);
@@ -284,12 +284,15 @@ public class MainActivity extends AppCompatActivity  {
                         }
                         // todo : BluetoothService Check
                         // SPP とはつなぎ方がどうも違うらしい
-                    } try {
-                        bluetoothSocket.close();
-                        Transmit_HID = FALSE;
-                        bluetoothSocket = null;
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } else{
+                        bluetoothAdapter.closeProfileProxy(BluetoothHidDevice.HID_DEVICE,bluetoothHidDevice);
+                        try {
+                            bluetoothSocket.close();
+                            Transmit_HID = FALSE;
+                            bluetoothSocket = null;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });
@@ -409,7 +412,7 @@ public class MainActivity extends AppCompatActivity  {
         NameAddressPairArrayAdapter adapter = new NameAddressPairArrayAdapter(this,android.R.layout.simple_spinner_item, deviceInfoList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-    };
+    }
     public class NameAddressPair extends Pair<String,String> {
       public NameAddressPair(String name, String address){
           super(name,address);

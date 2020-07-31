@@ -20,8 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="bluetoothService"
-            tools:ignore="Instantiatable"></service>
     </application>
 
 </manifest>
