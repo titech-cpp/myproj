@@ -9,15 +9,19 @@ import android.bluetooth.BluetoothHidDeviceAppQosSettings;
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,20 +36,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static android.bluetooth.BluetoothHidDevice.*;
-import static android.widget.AdapterView.*;
-import static com.example.bt_ctrl.BTindex.MY_UUID;
 import static com.example.bt_ctrl.BTindex.PSM;
-import static com.example.bt_ctrl.BTindex.Transmit_SPP;
 import static com.example.bt_ctrl.BTindex.Transmit_HID;
 import static com.example.bt_ctrl.BTindex.bluetoothAdapter;
 import static com.example.bt_ctrl.BTindex.bluetoothDevice;
 import static com.example.bt_ctrl.BTindex.bluetoothHidDevice;
 import static com.example.bt_ctrl.BTindex.bluetoothSocket;
+import static com.example.bt_ctrl.BTindex.mainActivity;
 import static com.example.bt_ctrl.BTindex.targetMACaddress;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-
-import static java.lang.Boolean.FALSE;
 
 class BTindex {
     public static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -100,8 +100,7 @@ class BTindex {
     };
 }
 public class MainActivity extends AppCompatActivity {
-    final MainActivity mainActivity = this;
-
+    private bluetoothService myService = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 //Device supports BT
                 textView.setText(R.string.support);
-            }
-
+            }}
+            {
             if (!BTindex.bluetoothAdapter.isEnabled()) {
                 /* if false */
                 int REQUEST_ENABLE_BT = 100;
@@ -166,13 +165,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onServiceConnected(int profile, BluetoothProfile proxy) {
                     viewInfo("HERE");
                     if (profile == BluetoothProfile.HID_DEVICE){//note: check HID device (or INPUT_HOST)
+                        Log.v("test","LINE178");//TODO:not come here
                         viewInfo("Connected" + profile);
                         BTindex.bluetoothHidDevice = (BluetoothHidDevice) proxy;
                         BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
                         executor.execute(commands);
                     }
                 }
-
                 //@Override
                 public void onServiceDisconnected(int profile) {
                     viewInfo("Good bye" + profile);
@@ -183,57 +182,76 @@ public class MainActivity extends AppCompatActivity {
             };
             //ここまでbluetoothHidDevice.getProfileProxyのための変数設定
             bluetoothAdapter.getProfileProxy(this, listener, BluetoothProfile.HID_DEVICE);
-            //bluetoothService service = new bluetoothService();
-            if (!Transmit_HID) {
+        ServiceConnection serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Log.v("test","LINE198");//OK
+                bluetoothService.LocalBinder binder = (bluetoothService.LocalBinder) service;
+                myService = binder.getService();
+            }
 
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                myService = null;
+            }
+        };
+        Log.i("BluetoothProfile",Integer.toString(bluetoothAdapter.getProfileConnectionState(BluetoothProfile.HID_DEVICE)));
                 //todo bindServiceについて
                 // https://developer.android.com/reference/android/bluetooth/BluetoothHidDeviceAppSdpSettings
                 // https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice#registerApp(android.bluetooth.BluetoothHidDeviceAppSdpSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20android.bluetooth.BluetoothHidDeviceAppQosSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothHidDevice.Callback)
+        try {
+            Intent intent = new Intent(MainActivity.this,bluetoothService.class);
+            bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 
-
-                if (bluetoothHidDevice == null){
-                    viewInfo("NULL");
-                }else{
-                    BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
-                    executor.execute(commands);
-                    bluetoothHidDevice.connect(bluetoothDevice);
-                    Transmit_HID = TRUE;
-                }
-                try {
-                    //Intent intent = new Intent(mainActivity,bluetoothService.class);
-                    //bindService(intent,service,Context.BIND_AUTO_CREATE);
-
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
+        if (bluetoothHidDevice == null) {
+            viewInfo("NULL");
+        }else {
+            BTindex.bluetoothHidDevice.registerApp(Sdp_Setting, qosSettings, qosSettings, executor, callback);
+            executor.execute(commands);
+            bluetoothHidDevice.connect(bluetoothDevice);
+            Transmit_HID = TRUE;
+        }
                 // todo : BluetoothService Check
-                // SPP とはつなぎ方がどうも違うらしい
-            } else{
-                bluetoothAdapter.closeProfileProxy(BluetoothHidDevice.HID_DEVICE,bluetoothHidDevice);
-                try {
-                    bluetoothSocket.close();
-                    Transmit_HID = FALSE;
-                    bluetoothSocket = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+        final Button button_send = findViewById(R.id.btnSend);
+            button_send.setOnClickListener(new View.OnClickListener(){
+
+                @Override
+                public void onClick(View v) {
+                    int number = myService.getNum();
+                    viewInfo(Integer.toString(number));
                 }
-            }
+            });
 
-
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        bluetoothAdapter.closeProfileProxy(BluetoothHidDevice.HID_DEVICE,bluetoothHidDevice);
+        try {
+            bluetoothSocket.close();
+            Transmit_HID = FALSE;
+            bluetoothSocket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     private void setSpinner(Spinner spinner, Set<BluetoothDevice> arr){
         // There are paired devices. Get the name and address of each paired device.
         List<NameAddressPair> deviceInfoList = new ArrayList<>();
         for (BluetoothDevice device : arr) {
-            NameAddressPair pair = new NameAddressPair(device.getName(),device.getAddress());
+            NameAddressPair pair = new NameAddressPair(device.getName(), device.getAddress());
             deviceInfoList.add(pair);
         }
         List<String> deviceNameList = new ArrayList<>();
-        NameAddressPairArrayAdapter adapter = new NameAddressPairArrayAdapter(this,android.R.layout.simple_spinner_item, deviceInfoList);
+        NameAddressPairArrayAdapter adapter = new NameAddressPairArrayAdapter(this, android.R.layout.simple_spinner_item, deviceInfoList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
     }
-    public class NameAddressPair extends Pair<String,String> {
+    private static class NameAddressPair extends Pair<String,String> {
         public NameAddressPair(String name, String address){
             super(name,address);
         }
@@ -244,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             return super.second;
         }
     };
-    public class NameAddressPairArrayAdapter extends ArrayAdapter<NameAddressPair> {
+    private static class NameAddressPairArrayAdapter extends ArrayAdapter<NameAddressPair> {
         public NameAddressPairArrayAdapter(Context context, int textViewResourceId, List<NameAddressPair> list){
             super(context, textViewResourceId, list);
         }

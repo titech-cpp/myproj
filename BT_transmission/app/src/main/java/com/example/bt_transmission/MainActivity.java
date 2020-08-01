@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity  {
                         }
                     };
                     //ここまでbluetoothHidDevice.getProfileProxyのための変数設定
-                    bluetoothAdapter.getProfileProxy(mainActivity, listener, BluetoothProfile.HID_DEVICE);
+                    bluetoothAdapter.getProfileProxy(MainActivity.this, listener, BluetoothProfile.HID_DEVICE);
                     //bluetoothService service = new bluetoothService();
                     if (isChecked) {
 
@@ -283,16 +283,6 @@ public class MainActivity extends AppCompatActivity  {
                             e.printStackTrace();
                         }
                         // todo : BluetoothService Check
-                        // SPP とはつなぎ方がどうも違うらしい
-                    } else{
-                        bluetoothAdapter.closeProfileProxy(BluetoothHidDevice.HID_DEVICE,bluetoothHidDevice);
-                        try {
-                            bluetoothSocket.close();
-                            Transmit_HID = FALSE;
-                            bluetoothSocket = null;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                     }
                 }
             });
@@ -458,6 +448,18 @@ public class MainActivity extends AppCompatActivity  {
                 }
             }
             return this.getItem(position).getAddress();
+        }
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        bluetoothAdapter.closeProfileProxy(BluetoothHidDevice.HID_DEVICE,bluetoothHidDevice);
+        try {
+            bluetoothSocket.close();
+            Transmit_HID = FALSE;
+            bluetoothSocket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     /*
